@@ -11,16 +11,16 @@
   const COLORS = Object.freeze([
     { id: "red", en: "Red", zh: "红色", pinyin: "hóng sè", hex: "#e53935" },
     { id: "green", en: "Green", zh: "绿色", pinyin: "lǜ sè", hex: "#43a047" },
-    { id: "yellow", en: "Yellow", zh: "黄色", pinyin: "huáng sè", hex: "#fdd835" },
+    { id: "yellow", en: "Yellow", zh: "黄色", pinyin: "huáng sè", hex: "#ffea00" },
     { id: "blue", en: "Blue", zh: "蓝色", pinyin: "lán sè", hex: "#1e88e5" },
     { id: "purple", en: "Purple", zh: "紫色", pinyin: "zǐ sè", hex: "#ab47bc" },
     { id: "orange", en: "Orange", zh: "橙色", pinyin: "chéng sè", hex: "#fb8c00" },
     { id: "brown", en: "Brown", zh: "咖啡色", pinyin: "kāfēi sè", hex: "#6d4c41" },
     { id: "black", en: "Black", zh: "黑色", pinyin: "hēi sè", hex: "#212121" },
-    { id: "white", en: "White", zh: "白色", pinyin: "bái sè", hex: "#eceff4" },
+    { id: "white", en: "White", zh: "白色", pinyin: "bái sè", hex: "#fafafa" },
     { id: "gray", en: "Gray", zh: "灰色", pinyin: "huī sè", hex: "#78909c" },
-    { id: "gold", en: "Gold", zh: "金色", pinyin: "jīn sè", hex: "#ffc107" },
-    { id: "silver", en: "Silver", zh: "银色", pinyin: "yín sè", hex: "#b0bec5" },
+    { id: "gold", en: "Gold", zh: "金色", pinyin: "jīn sè", hex: "#b8860b" },
+    { id: "silver", en: "Silver", zh: "银色", pinyin: "yín sè", hex: "#7d8fa3" },
   ]);
 
   const byId = (id) => /** @type {HTMLElement} */ (document.getElementById(id));
@@ -160,7 +160,15 @@
     el.progress.textContent = `Trial ${trialIndex + 1} / ${TRIALS_PER_RUN}`;
 
     el.stimulus.textContent = semantic.en;
-    el.stimulus.style.color = ink.hex;
+    el.stimulus.classList.remove("stimulus-word--gold", "stimulus-word--silver");
+    el.stimulus.style.removeProperty("color");
+    if (ink.id === "gold") {
+      el.stimulus.classList.add("stimulus-word--gold");
+    } else if (ink.id === "silver") {
+      el.stimulus.classList.add("stimulus-word--silver");
+    } else {
+      el.stimulus.style.color = ink.hex;
+    }
 
     const opts = sampleOptions(t.correctId);
     el.options.innerHTML = "";

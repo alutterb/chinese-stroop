@@ -224,6 +224,76 @@ body {
   text-shadow: 0 0 1px rgba(0, 0, 0, 0.4), 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
+/* Metallic ink: gradient + slow shimmer so gold ≠ yellow and silver ≠ white */
+.stimulus-word--gold,
+.stimulus-word--silver {
+  text-shadow: none;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5));
+}
+
+.stimulus-word--gold {
+  background-image: linear-gradient(
+    105deg,
+    #5c3d06 0%,
+    #8b6914 14%,
+    #c9a227 32%,
+    #ffe082 46%,
+    #fffde7 50%,
+    #ffd54f 54%,
+    #a67c00 72%,
+    #6b4e0a 100%
+  );
+  animation: shimmer-gold 2.6s ease-in-out infinite;
+}
+
+.stimulus-word--silver {
+  background-image: linear-gradient(
+    105deg,
+    #2e3a42 0%,
+    #546e7a 18%,
+    #90a4ae 36%,
+    #eceff1 48%,
+    #cfd8dc 52%,
+    #78909c 68%,
+    #455a64 100%
+  );
+  animation: shimmer-silver 3s ease-in-out infinite;
+}
+
+@keyframes shimmer-gold {
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+}
+
+@keyframes shimmer-silver {
+  0%,
+  100% {
+    background-position: 100% center;
+  }
+  50% {
+    background-position: 0% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stimulus-word--gold,
+  .stimulus-word--silver {
+    animation: none;
+    background-position: 50% center;
+  }
+}
+
 .options {
   display: flex;
   flex-direction: column;
