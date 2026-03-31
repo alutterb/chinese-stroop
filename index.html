@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chinese Stroop — 中文斯特鲁普</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,500;0,9..40,700;1,9..40,500&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-pattern" aria-hidden="true"></div>
+    <main class="shell">
+      <header class="top">
+        <h1 class="title">Chinese Stroop</h1>
+        <p class="subtitle">Pick the correct simplified Chinese — 简体中文</p>
+      </header>
+
+      <section id="screen-intro" class="panel card" aria-labelledby="intro-heading">
+        <h2 id="intro-heading" class="panel-title">Choose a level</h2>
+        <ul class="level-list">
+          <li>
+            <button type="button" class="level-btn" data-level="1">
+              <span class="level-name">Level 1 — Match the word</span>
+              <span class="level-desc">Ink color matches the English color name. Tap the Chinese for that color.</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="level-btn" data-level="2">
+              <span class="level-name">Level 2 — Match the ink (+ pinyin)</span>
+              <span class="level-desc">Ink may differ from the word. Tap the Chinese for the <strong>ink</strong> color. Options show pinyin.</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="level-btn" data-level="3">
+              <span class="level-name">Level 3 — Match the ink</span>
+              <span class="level-desc">Same as level 2, without pinyin on the buttons.</span>
+            </button>
+          </li>
+        </ul>
+        <p class="meta">Each run: <strong id="trial-count-label">24</strong> trials · five choices per trial</p>
+      </section>
+
+      <section id="screen-trial" class="panel card hidden" aria-live="polite">
+        <div class="trial-bar">
+          <span id="trial-level-badge" class="badge"></span>
+          <span id="trial-progress" class="progress"></span>
+        </div>
+        <p class="cue-label">Stimulus</p>
+        <div class="stimulus-wrap">
+          <p id="stimulus-word" class="stimulus-word" lang="en"></p>
+        </div>
+        <div id="options" class="options" role="group" aria-label="Answer choices"></div>
+        <p id="feedback" class="feedback hidden" aria-live="assertive"></p>
+      </section>
+
+      <section id="screen-summary" class="panel card hidden" aria-labelledby="summary-heading">
+        <h2 id="summary-heading" class="panel-title">Session summary</h2>
+        <dl class="stats">
+          <div>
+            <dt>Level</dt>
+            <dd id="sum-level"></dd>
+          </div>
+          <div>
+            <dt>Correct</dt>
+            <dd id="sum-correct"></dd>
+          </div>
+          <div>
+            <dt>Mean RT (correct)</dt>
+            <dd id="sum-rt"></dd>
+          </div>
+        </dl>
+        <p id="sum-lifetime" class="lifetime muted"></p>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-again-same">Same level again</button>
+          <button type="button" class="btn ghost" id="btn-again-menu">Level menu</button>
+        </div>
+      </section>
+    </main>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
