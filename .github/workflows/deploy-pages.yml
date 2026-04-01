@@ -1,0 +1,64 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write api-config.js from secret
+        env:
+          STROOP_API_CONFIG: ${{ secrets.STROOP_API_CONFIG }}
+        run: |
+          python3 << 'PY'
+          import os
+          from pathlib import Path
+          raw = os.environ.get("STROOP_API_CONFIG") or ""
+          content = raw.strip()
+          if not content:
+              content = 'window.STROOP_API = { supabaseUrl: "", supabaseAnonKey: "" };'
+              print("::warning::STROOP_API_CONFIG secret is empty — set it in repo Settings → Secrets. Cloud leaderboard disabled for this deploy.")
+          else:
+              if not content.endswith("\n"):
+                  content += "\n"
+          Path("api-config.js").write_text(content, encoding="utf-8")
+          PY
+
+      - name: Assemble static site
+        run: |
+          mkdir -p _site
+          cp index.html leaderboard.html styles.css \
+            app.js leaderboard-api.js leaderboard-storage.js leaderboard-page.js \
+            api-config.js _site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

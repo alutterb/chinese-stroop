@@ -22,11 +22,15 @@
       </nav>
       <header class="top">
         <h1 class="title">Leaderboard</h1>
-        <p class="subtitle">Stored on this device only · per level</p>
+        <p id="lb-subtitle" class="subtitle">Loading…</p>
       </header>
 
       <section class="panel card lb-card" aria-labelledby="lb-heading">
         <h2 id="lb-heading" class="panel-title visually-hidden">Scores by level</h2>
+        <div class="lb-toolbar">
+          <p id="lb-status" class="lb-status muted" aria-live="polite"></p>
+          <button type="button" class="btn ghost lb-refresh" id="lb-refresh">Refresh</button>
+        </div>
         <div class="lb-tabs" role="tablist" aria-label="Level">
           <button type="button" class="lb-tab lb-tab--active" id="lb-tab-1" role="tab" aria-selected="true" aria-controls="lb-panel-1">
             Level 1
@@ -80,7 +84,9 @@
         </div>
       </section>
     </main>
+    <script src="./api-config.js"></script>
     <script src="./leaderboard-storage.js"></script>
+    <script src="./leaderboard-api.js"></script>
     <script src="./leaderboard-page.js"></script>
   </body>
 </html>

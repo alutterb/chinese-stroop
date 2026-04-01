@@ -547,6 +547,27 @@ body {
   overflow-x: auto;
 }
 
+.lb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.lb-status {
+  margin: 0;
+  flex: 1 1 12rem;
+  font-size: 0.85rem;
+}
+
+.lb-refresh {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.85rem !important;
+}
+
 .lb-tabs {
   display: flex;
   gap: 0.35rem;

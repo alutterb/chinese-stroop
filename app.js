@@ -396,13 +396,15 @@
     });
     saveState(state);
 
-    if (window.ChineseStroopLB && currentLevel != null) {
-      window.ChineseStroopLB.add({
-        name: getPlayerName(),
-        level: currentLevel,
-        accuracyPct,
-        timeCompletedSec,
-      });
+    if (currentLevel != null && window.StroopLeaderboard) {
+      window.StroopLeaderboard
+        .submitRun({
+          name: getPlayerName(),
+          level: currentLevel,
+          accuracyPct,
+          timeCompletedSec,
+        })
+        .catch(() => {});
     }
 
     el.sumLevel.textContent = currentLevel != null ? LEVEL_LABELS[/** @type {1|2|3} */ (currentLevel)] : "—";

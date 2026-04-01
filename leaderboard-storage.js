@@ -55,5 +55,6 @@
     });
   }
 
-  global.ChineseStroopLB = { load, add, rowsForLevel, sortRows, KEY, V };
+  /** Local-only fallback / backup (localStorage). */
+  global.ChineseStroopLocal = { load, add, rowsForLevel, sortRows, KEY, V };
 })(typeof window !== "undefined" ? window : globalThis);
