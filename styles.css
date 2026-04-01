@@ -170,11 +170,36 @@ body {
 
 .trial-bar {
   display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.trial-bar__meta {
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.trial-bar__timer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+
+.trial-bar__timer-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
 }
 
 .badge {
@@ -493,13 +518,13 @@ body {
 }
 
 .countdown {
-  flex: 1 1 auto;
-  text-align: right;
-  min-width: 4.5rem;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   font-variant-numeric: tabular-nums;
   color: var(--text);
+  min-width: 4.25rem;
+  text-align: right;
+  letter-spacing: 0.02em;
 }
 
 .countdown--urgent {

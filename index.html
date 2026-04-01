@@ -66,9 +66,14 @@
 
       <section id="screen-trial" class="panel card hidden" aria-live="polite">
         <div class="trial-bar">
-          <span id="trial-level-badge" class="badge"></span>
-          <span id="trial-progress" class="progress"></span>
-          <span id="trial-countdown" class="countdown" aria-live="polite">15.0s</span>
+          <div class="trial-bar__meta">
+            <span id="trial-level-badge" class="badge"></span>
+            <span id="trial-progress" class="progress"></span>
+          </div>
+          <div class="trial-bar__timer" aria-label="Time remaining this trial">
+            <span class="trial-bar__timer-label">Time left</span>
+            <span id="trial-countdown" class="countdown" aria-live="polite">15.0s</span>
+          </div>
         </div>
         <p class="cue-label">Stimulus</p>
         <div class="stimulus-wrap">

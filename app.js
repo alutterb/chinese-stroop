@@ -94,12 +94,18 @@
    * @returns {{ semanticId: string; inkId: string; correctId: string }}
    */
   function buildTrial(level) {
-    if (level === 1) {
+    const lv = Number(level);
+    if (lv === 1) {
       const { semanticId, inkId } = randomCongruentPair();
       return { semanticId, inkId, correctId: semanticId };
     }
     const { semanticId, inkId } = randomIncongruentPair();
     return { semanticId, inkId, correctId: inkId };
+  }
+
+  function levelShowsPinyin(level) {
+    const lv = Number(level);
+    return lv === 1 || lv === 2;
   }
 
   /**
@@ -171,7 +177,8 @@
     clearFeedbackTimer();
     clearCountdownAndDeadline();
     runStartedPerf = performance.now();
-    currentLevel = level;
+    currentLevel = Number(level);
+    if (currentLevel < 1 || currentLevel > 3 || Number.isNaN(currentLevel)) currentLevel = 1;
     trialQueue = [];
     for (let i = 0; i < TRIALS_PER_RUN; i++) trialQueue.push(buildTrial(level));
     trialIndex = 0;
@@ -180,8 +187,9 @@
     showTrial();
   }
 
-  function updateCountdownDisplay(deadlinePerf) {
-    const left = Math.max(0, (deadlinePerf - performance.now()) / 1000);
+  function updateCountdownDisplay(deadlineMs) {
+    if (!el.countdown) return;
+    const left = Math.max(0, (deadlineMs - Date.now()) / 1000);
     el.countdown.textContent = `${left.toFixed(1)}s`;
     el.countdown.classList.toggle("countdown--urgent", left <= 5);
   }
@@ -200,11 +208,11 @@
     const ink = colorMap.get(t.inkId);
     if (!semantic || !ink) return;
 
-    const deadlinePerf = trialShownAt + TRIAL_MS;
+    const deadlineMs = Date.now() + TRIAL_MS;
 
     el.badge.textContent = LEVEL_LABELS[/** @type {1|2|3} */ (currentLevel)] || "";
     el.progress.textContent = `Trial ${trialIndex + 1} / ${TRIALS_PER_RUN}`;
-    updateCountdownDisplay(deadlinePerf);
+    updateCountdownDisplay(deadlineMs);
 
     el.stimulus.textContent = semantic.en;
     el.stimulus.style.color = ink.hex;
@@ -220,7 +228,7 @@
 
     const opts = sampleOptions(t.correctId);
     el.options.innerHTML = "";
-    const showPinyin = currentLevel === 1 || currentLevel === 2;
+    const showPinyin = levelShowsPinyin(currentLevel);
 
     opts.forEach((c) => {
       const btn = document.createElement("button");
@@ -236,7 +244,7 @@
       el.options.appendChild(btn);
     });
 
-    countdownInterval = window.setInterval(() => updateCountdownDisplay(deadlinePerf), 100);
+    countdownInterval = window.setInterval(() => updateCountdownDisplay(deadlineMs), 50);
     trialTimeoutId = window.setTimeout(onTrialTimeout, TRIAL_MS);
   }
 
