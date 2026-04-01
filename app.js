@@ -3,9 +3,11 @@
 
   const STORAGE_PREFIX = "chineseStroop_";
   const STORAGE_VERSION = 1;
+  const PLAYER_NAME_KEY = STORAGE_PREFIX + "playerName";
   const TRIALS_PER_RUN = 24;
   const OPTION_COUNT = 5;
   const FEEDBACK_MS = 550;
+  const TRIAL_MS = 15000;
 
   /** @type {readonly { id: string; en: string; zh: string; pinyin: string; hex: string }[]} */
   const COLORS = Object.freeze([
@@ -32,6 +34,7 @@
     trialCountLabel: byId("trial-count-label"),
     badge: byId("trial-level-badge"),
     progress: byId("trial-progress"),
+    countdown: byId("trial-countdown"),
     stimulus: byId("stimulus-word"),
     inkBar: byId("ink-bar"),
     options: byId("options"),
@@ -39,12 +42,21 @@
     sumLevel: byId("sum-level"),
     sumCorrect: byId("sum-correct"),
     sumRt: byId("sum-rt"),
+    sumTime: byId("sum-time"),
     sumLifetime: byId("sum-lifetime"),
     btnAgainSame: byId("btn-again-same"),
     btnAgainMenu: byId("btn-again-menu"),
+    playerName: /** @type {HTMLInputElement | null} */ (document.getElementById("player-name")),
   };
 
   el.trialCountLabel.textContent = String(TRIALS_PER_RUN);
+
+  if (el.playerName) {
+    el.playerName.value = localStorage.getItem(PLAYER_NAME_KEY) || "";
+    el.playerName.addEventListener("input", () => {
+      localStorage.setItem(PLAYER_NAME_KEY, el.playerName.value.trim().slice(0, 40));
+    });
+  }
 
   /** @type {Map<string, typeof COLORS[0]>} */
   const colorMap = new Map(COLORS.map((c) => [c.id, c]));
@@ -119,6 +131,28 @@
   /** @type {{ level: number; semanticId: string; inkId: string; correctId: string; chosenId: string | null; correct: boolean; reactionTimeMs: number | null }[]} */
   let sessionLog = [];
   let feedbackTimer = 0;
+  /** @type {number} */
+  let runStartedPerf = 0;
+  let countdownInterval = 0;
+  let trialTimeoutId = 0;
+
+  function getPlayerName() {
+    const fromInput = el.playerName?.value?.trim() || "";
+    const fromStore = localStorage.getItem(PLAYER_NAME_KEY)?.trim() || "";
+    const raw = fromInput || fromStore;
+    return raw ? raw.slice(0, 40) : "Anonymous";
+  }
+
+  function clearCountdownAndDeadline() {
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = 0;
+    }
+    if (trialTimeoutId) {
+      clearTimeout(trialTimeoutId);
+      trialTimeoutId = 0;
+    }
+  }
 
   function showScreen(which) {
     el.intro.classList.toggle("hidden", which !== "intro");
@@ -135,6 +169,8 @@
 
   function startLevel(level) {
     clearFeedbackTimer();
+    clearCountdownAndDeadline();
+    runStartedPerf = performance.now();
     currentLevel = level;
     trialQueue = [];
     for (let i = 0; i < TRIALS_PER_RUN; i++) trialQueue.push(buildTrial(level));
@@ -144,8 +180,15 @@
     showTrial();
   }
 
+  function updateCountdownDisplay(deadlinePerf) {
+    const left = Math.max(0, (deadlinePerf - performance.now()) / 1000);
+    el.countdown.textContent = `${left.toFixed(1)}s`;
+    el.countdown.classList.toggle("countdown--urgent", left <= 5);
+  }
+
   function showTrial() {
     clearFeedbackTimer();
+    clearCountdownAndDeadline();
     awaitingAnswer = true;
     trialShownAt = performance.now();
     el.feedback.classList.add("hidden");
@@ -157,8 +200,11 @@
     const ink = colorMap.get(t.inkId);
     if (!semantic || !ink) return;
 
+    const deadlinePerf = trialShownAt + TRIAL_MS;
+
     el.badge.textContent = LEVEL_LABELS[/** @type {1|2|3} */ (currentLevel)] || "";
     el.progress.textContent = `Trial ${trialIndex + 1} / ${TRIALS_PER_RUN}`;
+    updateCountdownDisplay(deadlinePerf);
 
     el.stimulus.textContent = semantic.en;
     el.stimulus.style.color = ink.hex;
@@ -174,7 +220,7 @@
 
     const opts = sampleOptions(t.correctId);
     el.options.innerHTML = "";
-    const showPinyin = currentLevel === 2;
+    const showPinyin = currentLevel === 1 || currentLevel === 2;
 
     opts.forEach((c) => {
       const btn = document.createElement("button");
@@ -189,6 +235,9 @@
       btn.addEventListener("click", () => onOptionClick(c.id));
       el.options.appendChild(btn);
     });
+
+    countdownInterval = window.setInterval(() => updateCountdownDisplay(deadlinePerf), 100);
+    trialTimeoutId = window.setTimeout(onTrialTimeout, TRIAL_MS);
   }
 
   function escapeHtml(s) {
@@ -199,12 +248,56 @@
       .replace(/"/g, "&quot;");
   }
 
+  function advanceAfterFeedback() {
+    feedbackTimer = 0;
+    trialIndex += 1;
+    if (trialIndex >= trialQueue.length) {
+      endSession();
+    } else {
+      showTrial();
+    }
+  }
+
+  function onTrialTimeout() {
+    trialTimeoutId = 0;
+    if (!awaitingAnswer || currentLevel === null || trialShownAt === null) return;
+    awaitingAnswer = false;
+    clearCountdownAndDeadline();
+
+    const t = trialQueue[trialIndex];
+    sessionLog.push({
+      level: currentLevel,
+      semanticId: t.semanticId,
+      inkId: t.inkId,
+      correctId: t.correctId,
+      chosenId: null,
+      correct: false,
+      reactionTimeMs: TRIAL_MS,
+    });
+
+    el.feedback.classList.remove("hidden");
+    el.feedback.classList.remove("ok");
+    el.feedback.classList.add("bad");
+    el.feedback.textContent = `Time's up (${TRIAL_MS / 1000}s)`;
+
+    const buttons = el.options.querySelectorAll(".option-btn");
+    buttons.forEach((b) => {
+      b.disabled = true;
+      const id = b.getAttribute("data-color-id");
+      if (id === t.correctId) b.classList.add("correct-reveal");
+    });
+
+    feedbackTimer = window.setTimeout(advanceAfterFeedback, FEEDBACK_MS);
+  }
+
   /**
    * @param {string} chosenId
    */
   function onOptionClick(chosenId) {
     if (!awaitingAnswer || currentLevel === null || trialShownAt === null) return;
     awaitingAnswer = false;
+    clearCountdownAndDeadline();
+
     const t = trialQueue[trialIndex];
     const rt = Math.round(performance.now() - trialShownAt);
     const correct = chosenId === t.correctId;
@@ -232,15 +325,7 @@
       if (id === t.correctId) b.classList.add("correct-reveal");
     });
 
-    feedbackTimer = window.setTimeout(() => {
-      feedbackTimer = 0;
-      trialIndex += 1;
-      if (trialIndex >= trialQueue.length) {
-        endSession();
-      } else {
-        showTrial();
-      }
-    }, FEEDBACK_MS);
+    feedbackTimer = window.setTimeout(advanceAfterFeedback, FEEDBACK_MS);
   }
 
   function meanRtCorrect() {
@@ -268,12 +353,22 @@
     localStorage.setItem(STORAGE_PREFIX + "state", JSON.stringify({ ...state, sessions }));
   }
 
+  function formatRunTime(sec) {
+    if (sec < 60) return `${sec.toFixed(1)} s`;
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}m ${s.toFixed(1)}s`;
+  }
+
   function endSession() {
     clearFeedbackTimer();
+    clearCountdownAndDeadline();
     awaitingAnswer = false;
     const n = sessionLog.length;
     const correctN = sessionLog.filter((r) => r.correct).length;
     const meanRt = meanRtCorrect();
+    const timeCompletedSec = Math.round(((performance.now() - runStartedPerf) / 1000) * 10) / 10;
+    const accuracyPct = n ? Math.round((100 * correctN) / n) : 0;
 
     const state = loadState();
     state.sessions.push({
@@ -293,9 +388,19 @@
     });
     saveState(state);
 
+    if (window.ChineseStroopLB && currentLevel != null) {
+      window.ChineseStroopLB.add({
+        name: getPlayerName(),
+        level: currentLevel,
+        accuracyPct,
+        timeCompletedSec,
+      });
+    }
+
     el.sumLevel.textContent = currentLevel != null ? LEVEL_LABELS[/** @type {1|2|3} */ (currentLevel)] : "—";
-    el.sumCorrect.textContent = `${correctN} / ${n} (${n ? Math.round((100 * correctN) / n) : 0}%)`;
+    el.sumCorrect.textContent = `${correctN} / ${n} (${accuracyPct}%)`;
     el.sumRt.textContent = meanRt != null ? `${meanRt} ms` : "—";
+    el.sumTime.textContent = formatRunTime(timeCompletedSec);
 
     const L = state.lifetime;
     const lifeMean = L.nRtCorrect ? Math.round(L.sumRtCorrect / L.nRtCorrect) : null;
@@ -320,6 +425,7 @@
 
   el.btnAgainMenu.addEventListener("click", () => {
     clearFeedbackTimer();
+    clearCountdownAndDeadline();
     showScreen("intro");
   });
 })();

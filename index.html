@@ -15,6 +15,11 @@
   <body>
     <div class="bg-pattern" aria-hidden="true"></div>
     <main class="shell">
+      <nav class="site-nav" aria-label="Site">
+        <span class="site-nav__here">Play</span>
+        <span class="site-nav__sep" aria-hidden="true">·</span>
+        <a class="site-nav__link" href="./leaderboard.html">Leaderboard</a>
+      </nav>
       <header class="top">
         <h1 class="title">Chinese Stroop</h1>
         <p class="subtitle">Pick the correct simplified Chinese — 简体中文</p>
@@ -22,11 +27,23 @@
 
       <section id="screen-intro" class="panel card" aria-labelledby="intro-heading">
         <h2 id="intro-heading" class="panel-title">Choose a level</h2>
+        <div class="name-field">
+          <label class="name-field__label" for="player-name">Display name (for leaderboard)</label>
+          <input
+            class="name-field__input"
+            type="text"
+            id="player-name"
+            name="player-name"
+            maxlength="40"
+            placeholder="Anonymous"
+            autocomplete="nickname"
+          />
+        </div>
         <ul class="level-list">
           <li>
             <button type="button" class="level-btn" data-level="1">
               <span class="level-name">Level 1 — Match the word</span>
-              <span class="level-desc">Ink color matches the English color name. Tap the Chinese for that color.</span>
+              <span class="level-desc">Ink color matches the English color name. Tap the Chinese for that color. Options show pinyin.</span>
             </button>
           </li>
           <li>
@@ -42,13 +59,16 @@
             </button>
           </li>
         </ul>
-        <p class="meta">Each run: <strong id="trial-count-label">24</strong> trials · five choices per trial</p>
+        <p class="meta">
+          Each run: <strong id="trial-count-label">24</strong> trials · <strong>15s</strong> per trial · five choices
+        </p>
       </section>
 
       <section id="screen-trial" class="panel card hidden" aria-live="polite">
         <div class="trial-bar">
           <span id="trial-level-badge" class="badge"></span>
           <span id="trial-progress" class="progress"></span>
+          <span id="trial-countdown" class="countdown" aria-live="polite">15.0s</span>
         </div>
         <p class="cue-label">Stimulus</p>
         <div class="stimulus-wrap">
@@ -76,6 +96,10 @@
             <dt>Mean RT (correct)</dt>
             <dd id="sum-rt"></dd>
           </div>
+          <div>
+            <dt>Run time</dt>
+            <dd id="sum-time"></dd>
+          </div>
         </dl>
         <p id="sum-lifetime" class="lifetime muted"></p>
         <div class="actions">
@@ -84,6 +108,7 @@
         </div>
       </section>
     </main>
+    <script src="./leaderboard-storage.js"></script>
     <script src="./app.js" defer></script>
   </body>
 </html>
