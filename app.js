@@ -33,6 +33,7 @@
     badge: byId("trial-level-badge"),
     progress: byId("trial-progress"),
     stimulus: byId("stimulus-word"),
+    inkBar: byId("ink-bar"),
     options: byId("options"),
     feedback: byId("feedback"),
     sumLevel: byId("sum-level"),
@@ -160,14 +161,15 @@
     el.progress.textContent = `Trial ${trialIndex + 1} / ${TRIALS_PER_RUN}`;
 
     el.stimulus.textContent = semantic.en;
-    el.stimulus.classList.remove("stimulus-word--gold", "stimulus-word--silver");
-    el.stimulus.style.removeProperty("color");
+    el.stimulus.style.color = ink.hex;
+    el.inkBar.classList.remove("ink-bar--gold", "ink-bar--silver");
+    el.inkBar.hidden = true;
     if (ink.id === "gold") {
-      el.stimulus.classList.add("stimulus-word--gold");
+      el.inkBar.hidden = false;
+      el.inkBar.classList.add("ink-bar--gold");
     } else if (ink.id === "silver") {
-      el.stimulus.classList.add("stimulus-word--silver");
-    } else {
-      el.stimulus.style.color = ink.hex;
+      el.inkBar.hidden = false;
+      el.inkBar.classList.add("ink-bar--silver");
     }
 
     const opts = sampleOptions(t.correctId);
